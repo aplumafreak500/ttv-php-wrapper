@@ -28,19 +28,19 @@ else {
 $token = @fopen("http://api.twitch.tv/api/channels/$ch/access_token", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (PHP/5.4, TTVStreamHandler/1.0, Apache/2.4, cgi like Gecko)\r\nConnection: close\r\nHost: api.twitch.tv"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nConnection: close\r\nHost: api.twitch.tv"))));
 
 $stream_token=json_decode(stream_get_contents($token), true);
 
 $m3u = @fopen("http://usher.twitch.tv/api/channel/hls/$ch.m3u8?player=twitchweb&token=".$stream_token["token"]."&sig=".$stream_token["sig"]."&allow_audio_only=true&allow_source=true&type=any&p=0", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (PHP/5.4, TTVStreamHandler/1.0, Apache/2.4, cgi like Gecko)\r\nConnection: close\r\nHost: usher.twitch.tv"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nConnection: close\r\nHost: usher.twitch.tv"))));
 	
 if ($m3u===false) {
 	header("HTTP/1.1 404 Not Found");
 	header("Content-Type: text/plain");
-	echo "This channel is not live at the moment.";
+	echo "The channel $ch is not live at the moment. Try again later.";
 	exit;
 }
 else {
@@ -68,7 +68,7 @@ else {
 	$ao_m3u = @fopen("$ao_url", "r", false, stream_context_create(array(
 		"http"=>array(
 			"method"=>"GET",
-			"header" =>"User-Agent: Mozilla/5.0 (PHP/5.4, TTVStreamHandler/1.0, Apache/2.4, cgi like Gecko)\r\nConnection: close"))));
+			"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nConnection: close"))));
 
 	$ao_m3tx=stream_get_contents($ao_m3u);
 
@@ -79,11 +79,11 @@ else {
 	$stmjson = @fopen("https://api.twitch.tv/kraken/channels/$ch", "r", false, stream_context_create(array(
 		"http"=>array(
 			"method"=>"GET",
-			"header" =>"User-Agent: Mozilla/5.0 (PHP/5.4, TTVStreamHandler/1.0, Apache/2.4, cgi like Gecko)\r\nConnection: close"))));
+			"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nx-api-version: 3\r\nConnection: close"))));
 	
 	$stminf=json_decode(stream_get_contents($stmjson), true);
 	
-	$ao_m3tx=str_replace("#EXTINF:4.000,", "#EXTINF:4.000,".$stminf["display_name"]." - ".$stminf["status"]." (Playing ".$stminf["game"].")", $ao_m3tx);
+	$ao_m3tx=str_replace("#EXTINF:2.000,", "#EXTINF:2.000,".$stminf["display_name"]." - ".$stminf["status"]." (Playing ".$stminf["game"].")", $ao_m3tx);
 
 	$ao_m3tx=str_replace("index-", $ao_host."index-", $ao_m3tx);
 
