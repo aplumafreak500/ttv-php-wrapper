@@ -1,5 +1,4 @@
 <?php
-
 /*
     ttvstream.php - Twitch TV PHP Wrapper
     Copyright © 2016 Alex Pensinger (APLumaFreak500)
@@ -25,6 +24,13 @@ else {
 	$v = 1;
 }
 
+if (isset($_GET["fmt"])) {
+	$fmt = intval(htmlspecialchars($_GET["fmt"]));
+}
+else {
+	$fmt = 0;
+}
+
 $token = @fopen("http://api.twitch.tv/api/channels/$ch/access_token", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
@@ -45,48 +51,45 @@ if ($m3u===false) {
 }
 else {
 	header("Content-Type: audio/x-mpegurl");
-	// header("Content-Type: text/plain");
 }
+$m3u_array=explode("\n", stream_get_contents($m3u));
+unset($m3u_array[0]);
+unset($m3u_array[1]);
 
-if ($v>=1) {
-	echo stream_get_contents($m3u);
-	exit;
+if ((($fmt+1)*3)+1 < count($m3u_array)) {
+	$index=(($fmt+1)*3)+1;
 }
-
 else {
-	$m3u_array=explode("\n", stream_get_contents($m3u));
-	unset($m3u_array[0]);
-	unset($m3u_array[1]);
-
-	$m3u_array=array_chunk($m3u_array, 3);
-
-	end($m3u_array);
-	$ao_stm=prev($m3u_array);
-
-	$ao_url=$ao_stm[2];
-
-	$ao_m3u = @fopen("$ao_url", "r", false, stream_context_create(array(
-		"http"=>array(
-			"method"=>"GET",
-			"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nConnection: close"))));
-
-	$ao_m3tx=stream_get_contents($ao_m3u);
-
-	$pos=strpos($ao_url, "index-live.m3u8");
-
-	$ao_host=substr($ao_url, 0, $pos);
-	
-	$stmjson = @fopen("https://api.twitch.tv/kraken/channels/$ch", "r", false, stream_context_create(array(
-		"http"=>array(
-			"method"=>"GET",
-			"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nx-api-version: 3\r\nConnection: close"))));
-	
-	$stminf=json_decode(stream_get_contents($stmjson), true);
-	
-	$ao_m3tx=str_replace("#EXTINF:2.000,", "#EXTINF:2.000,".$stminf["display_name"]." - ".$stminf["status"]." (Playing ".$stminf["game"].")", $ao_m3tx);
-
-	$ao_m3tx=str_replace("index-", $ao_host."index-", $ao_m3tx);
-
-	echo $ao_m3tx;
+	if ($v>=1) {
+		$index=count($m3u_array);
+	}
+	else {
+		$index=3;
+	}
 }
+$ao_url=$m3u_array[$index];
+
+$ao_m3u = @fopen("$ao_url", "r", false, stream_context_create(array(
+	"http"=>array(
+		"method"=>"GET",
+		"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nConnection: close"))));
+
+$ao_m3tx=stream_get_contents($ao_m3u);
+
+$pos=strpos($ao_url, "index-live.m3u8");
+
+$ao_host=substr($ao_url, 0, $pos);
+
+$stmjson = @fopen("https://api.twitch.tv/kraken/channels/$ch", "r", false, stream_context_create(array(
+	"http"=>array(
+		"method"=>"GET",
+		"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nx-api-version: 3\r\nConnection: close"))));
+
+$stminf=json_decode(stream_get_contents($stmjson), true);
+
+$ao_m3tx=str_replace("#EXTINF:2.000,", "#EXTINF:2.000,".$stminf["display_name"]." - ".$stminf["status"]." (Playing ".$stminf["game"].")", $ao_m3tx);
+
+$ao_m3tx=str_replace("index-", $ao_host."index-", $ao_m3tx);
+
+echo $ao_m3tx;
 ?>

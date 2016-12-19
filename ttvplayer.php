@@ -25,23 +25,30 @@ else {
 	$v = 1;
 }
 
-	$stmjson = @fopen("https://api.twitch.tv/kraken/channels/$ch", "r", false, stream_context_create(array(
-		"http"=>array(
-			"method"=>"GET",
-			"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nx-api-version: 3\r\nConnection: close"))));
-	
-	$stminf=json_decode(stream_get_contents($stmjson), true);
+if (isset($_GET["fmt"])) {
+	$fmt = intval(htmlspecialchars($_GET["fmt"]));
+}
+else {
+	$fmt = 0;
+}
+
+$stmjson = @fopen("https://api.twitch.tv/kraken/channels/$ch", "r", false, stream_context_create(array(
+	"http"=>array(
+		"method"=>"GET",
+		"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nx-api-version: 3\r\nConnection: close"))));
+
+$stminf=json_decode(stream_get_contents($stmjson), true);
 ?>
 <html>
 	<head>
 		<?php
-			echo "<title>".$stminf["status"]." - ".$stminf["displayname"]." playing ."$stminf["game"]."</title>";
+			echo "<title>".$stminf["status"]." - ".$stminf["display_name"]." playing ".$stminf["game"]."</title>";
 		?>
 	</head>
 	<body>
 		<video controls width="720" height="360">
 			<?php
-				echo "<source src=\"/ttvstream.php?channel=$ch&v=$v\">\n";
+				echo "<source src=\"/ttvstream.php?channel=$ch&v=$v&fmt=$fmt\">\n";
 			?>
 		</video>
 	</body>
