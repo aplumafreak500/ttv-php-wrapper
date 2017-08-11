@@ -12,10 +12,10 @@
 */
 
 if (isset($_GET["channel"])) {
-	$ch = htmlspecialchars($_GET["channel"]);
+	$ch_name = htmlspecialchars($_GET["channel"]);
 }
 else {
-	$ch = "twitch";
+	$ch_name = "twitch";
 }
 
 if (isset($_GET["v"]) && intval($_GET["v"])>=1) {
@@ -32,23 +32,77 @@ else {
 	$fmt = 0;
 }
 
+// Get ID for specified login
+
+$ch_json=@fopen("https://api.twitch.tv/kraken/users?login=$ch_name", "r", false, stream_context_create(array(
+	"http"=>array(
+		"method"=>"GET",
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close"))));
+if ($ch_json===false) {
+	$ch="0";
+}
+else {
+	$ch_inf=json_decode(stream_get_contents($ch_json), true);
+	$ch=$ch_inf["users"][0]["_id"];
+}
+
+// Check if this channel is hosting someone
+
+$check_host=@fopen("https://tmi.twitch.tv/hosts?include_logins=1&host=$ch", "r", false, stream_context_create(array(
+	"http"=>array(
+		"method"=>"GET",
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close"))));
+if ($check_host===false) {
+	$host_info=False;
+}
+else {
+	$host_info=json_decode(stream_get_contents($check_host), true);
+}
+
+// If the target is hosting someone, redirect the stream requests to the hosted channel
+
+if ($host_info!==False && @$host_info["hosts"][0]["target_id"]) {
+	$ch_host=$host_info["hosts"][0]["host_display_name"];
+	$ch_name=$host_info["hosts"][0]["target_login"];
+	$ch=$host_info["hosts"][0]["target_id"];
+}
+
+// Stream metadata
+
 $stmjson = @fopen("https://api.twitch.tv/kraken/channels/$ch", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (Windows NT 6.1; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nx-api-version: 3\r\nConnection: close"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close"))));
 
-$stminf=json_decode(stream_get_contents($stmjson), true);
+if ($stmjson===false) {
+	$stminf=json_decode("{\"status\":null,\"display_name\":\"$ch_name\",\"game\":null}",True);
+}
+else {
+	$stminf=json_decode(stream_get_contents($stmjson), true);
+}
+
+if (@$ch_host) {
+	$stm_metadata=$ch_host." hosting ".$stminf["display_name"]." - ".$stminf["status"]." (Playing ".$stminf["game"].")";
+	$ch_access=$host_info["hosts"][0]["host_login"];
+}
+else {
+	$stm_metadata=$stminf["display_name"]." - ".$stminf["status"]." (Playing ".$stminf["game"].")";
+	$ch_access=$ch_name;
+}
+
 ?>
 <html>
 	<head>
 		<?php
-			echo "<title>".$stminf["status"]." - ".$stminf["display_name"]." playing ".$stminf["game"]."</title>";
+			echo "<title>".$stm_metadata."</title>";
 		?>
 	</head>
 	<body>
+		<h1><?php echo $stminf["status"]; ?></h1>
+		<h2><?php echo $stminf["display_name"]." playing ".$stminf["game"]; ?></h2>
 		<video controls width="720" height="360">
 			<?php
-				echo "<source src=\"/ttvstream.php?channel=$ch&v=$v&fmt=$fmt\">\n";
+				echo "<source src=\"ttvstream.php?channel=$ch_access&v=$v&fmt=$fmt\">\n";
 			?>
 		</video>
 	</body>
