@@ -31,6 +31,12 @@ if (isset($_GET["fmt"])) {
 else {
 	$fmt = 0;
 }
+if (isset($_GET["raw"])) {
+	$process_m3u8 = True;
+}
+else {
+	$process_m3u8 = False;
+}
 
 // Get ID for specified login
 
@@ -102,7 +108,9 @@ else {
 		<h2><?php echo $stminf["display_name"]." playing ".$stminf["game"]; ?></h2>
 		<video controls width="720" height="360" autoplay="false">
 			<?php
-				echo "<source src=\"ttvstream.php?channel=$ch_access&v=$v&fmt=$fmt\">\n";
+				echo "<source src=\"ttvstream.php?channel=$ch_access&v=$v&fmt=$fmt";
+				if ($process_m3u8 == True) echo "&raw";
+				echo "\">\n";
 			?>
 		</video>
 	</body>

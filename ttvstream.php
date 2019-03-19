@@ -34,6 +34,13 @@ else {
 	$fmt = 0;
 }
 
+if (isset($_GET["raw"])) {
+	$process_m3u8 = True;
+}
+else {
+	$process_m3u8 = False;
+}
+
 // Get ID for specified login
 
 $ch_json=@fopen("https://api.twitch.tv/kraken/users?login=$ch_name", "r", false, stream_context_create(array(
@@ -111,22 +118,27 @@ if ($m3u===false) {
 else {
 	header("Content-Type: audio/x-mpegurl");
 }
-$m3u_array=explode("\n", stream_get_contents($m3u));
-unset($m3u_array[0]);
-unset($m3u_array[1]);
 
-if ((($fmt+1)*3)+1 < count($m3u_array)) {
-	$index=(($fmt+1)*3)+1;
+$m3u_array=explode("\n", stream_get_contents($m3u));
+
+if ($v<=0) {
+	$index=count($m3u_array)-2;
 }
 else {
-	if ($v>=1) {
-		$index=count($m3u_array);
+	if ((($fmt+1)*3)+1 < count($m3u_array)) {
+		$index=(($fmt+1)*3)+1;
 	}
 	else {
-		$index=3;
+		$index=4;
 	}
 }
+
 $ao_url=$m3u_array[$index];
+
+if ($process_m3u8 != True) {
+	echo $ao_url;
+	exit;
+}
 
 $ao_m3u = @fopen("$ao_url", "r", false, stream_context_create(array(
 	"http"=>array(
