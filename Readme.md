@@ -23,6 +23,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright © 2016 Alex Pensinger (APLumaFreak500). All rights reserved.
+Copyright © 2016,2019 Alex Pensinger (APLumaFreak500). All rights reserved.
 
 This project is not affiliated with Twitch TV.

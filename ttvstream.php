@@ -2,7 +2,7 @@
 
 /*
     ttvstream.php - Twitch TV PHP Wrapper
-    Copyright © 2016 Alex Pensinger (APLumaFreak500)
+    Copyright © 2019 Alex Pensinger (APLumaFreak500)
 
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -96,7 +96,7 @@ if ($token===false) {
 
 $stream_token=json_decode(stream_get_contents($token), true);
 
-$m3u = @fopen("https://usher.ttvnw.net/api/channel/hls/$ch_name.m3u8?player=twitchweb&token=".$stream_token["token"]."&sig=".$stream_token["sig"]."&allow_audio_only=true&allow_source=true&type=any&p=0", "r", false, stream_context_create(array(
+$m3u = @fopen("https://usher.ttvnw.net/api/channel/hls/$ch_name.m3u8?player=twitchweb&token=".urlencode($stream_token["token"])."&sig=".$stream_token["sig"]."&allow_audio_only=true&allow_source=true&type=any&p=0", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
 		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb,\r\nConnection: close\r\nHost: usher.ttvnw.net"))));
@@ -137,7 +137,7 @@ $pos=strpos($ao_url, "index-live.m3u8");
 
 $ao_host=substr($ao_url, 0, $pos);
 
-if ($ch_host) {
+if (@$ch_host) {
 	$stm_metadata=$ch_host." hosting ".$stminf["display_name"]." - ".$stminf["status"]." (Playing ".$stminf["game"].")";
 }
 else {
