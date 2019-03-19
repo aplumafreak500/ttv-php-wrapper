@@ -96,7 +96,9 @@ if ($token===false) {
 
 $stream_token=json_decode(stream_get_contents($token), true);
 
-$m3u = @fopen("https://usher.ttvnw.net/api/channel/hls/$ch_name.m3u8?player=twitchweb&token=".urlencode($stream_token["token"])."&sig=".$stream_token["sig"]."&allow_audio_only=true&allow_source=true&type=any&p=0", "r", false, stream_context_create(array(
+$p=rand(0,100000000);
+
+$m3u = @fopen("https://usher.ttvnw.net/api/channel/hls/$ch_name.m3u8?player=twitchweb&token=".urlencode($stream_token["token"])."&sig=".$stream_token["sig"]."&allow_audio_only=true&allow_source=true&type=any&p=$p&allow_spect=true", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
 		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb,\r\nConnection: close\r\nHost: usher.ttvnw.net"))));
