@@ -2,7 +2,7 @@
 
 /*
     ttvplayer.php - Twitch TV PHP Wrapper
-    Copyright © 2016 Alex Pensinger (APLumaFreak500)
+    Copyright © 2019 Alex Pensinger (APLumaFreak500)
 
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -100,7 +100,7 @@ else {
 	<body>
 		<h1><?php echo $stminf["status"]; ?></h1>
 		<h2><?php echo $stminf["display_name"]." playing ".$stminf["game"]; ?></h2>
-		<video controls width="720" height="360">
+		<video controls width="720" height="360" autoplay="false">
 			<?php
 				echo "<source src=\"ttvstream.php?channel=$ch_access&v=$v&fmt=$fmt\">\n";
 			?>
