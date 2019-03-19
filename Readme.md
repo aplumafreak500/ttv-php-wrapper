@@ -12,7 +12,7 @@ Then, open ttvplayer.php in a web browser:
 
 * channel - Channel to tune into. Channel must be live. Defaults to "twitch".
 * v - Tune to the video stream. If set to 0, use the audio-only stream. Defaults to 1.
-* fmt - Zero-based stream ID. If a channel has quality options, this can be set from 0 for "Source" through 4 for "Mobile". "fmt=5" is equalivalent to "v=0". Channels that do not have quality options can only use 0 for Source or 1 for Audio Only. Defaults to 0.
+* fmt - Zero-based stream ID. If a channel has quality options, this can be set from 0 for "Source" through 6 for 144p (some channels may have less options  available, depending on that channel's streaming settings). "fmt=6" is equalivalent to "v=0". Channels that do not have quality options can only use 0 for Source or 1 for Audio Only. Defaults to 0.
 
 ## License
 This software is licensed under the GNU General Public License v3.
