@@ -1,10 +1,17 @@
+# Notice
+Currently, host redirection and grabbing stream access keys are not working due to changes in Twitch's API. Feel free to submit pull requests to get this working if I'm too slow myself :p
+
 # Twitch TV PHP Handler
 This is a simple PHP framework for accessing Twitch TV streams.
 
 ## How to Use
-Upload the contents of this repository to a web server that supports PHP.
+* Upload the contents of this repository to a web server that supports PHP.
 
-Then, open ttvplayer.php in a web browser:
+* Copy config.php.example to config.php.
+
+* Edit config.php and insert the Client ID and Client Secret you get from Twitch's developer console. Also, be sure to generate an App Access Token and put it there too. (Details to be written)
+
+* Then, open ttvplayer.php in a web browser:
 
 [http://localhost/ttvplayer.php](http://127.0.0.1/ttvplayer.php)
 
@@ -23,6 +30,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright © 2016,2019 Alex Pensinger (APLumaFreak500). All rights reserved.
+Copyright © 2016,2019,2021 Alex Pensinger (APLumaFreak500). All rights reserved.
 
 This project is not affiliated with Twitch TV.

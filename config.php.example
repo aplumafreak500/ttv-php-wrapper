@@ -1,0 +1,7 @@
+<?php
+
+$client_id="Your Client ID Here";
+$client_secret="Your Client Secret Here";
+$access_token="Your App Access Token Here";
+
+?>

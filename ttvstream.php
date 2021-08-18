@@ -2,7 +2,7 @@
 
 /*
     ttvstream.php - Twitch TV PHP Wrapper
-    Copyright © 2019 Alex Pensinger (APLumaFreak500)
+    Copyright © 2021 Alex Pensinger (APLumaFreak500)
 
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -41,18 +41,36 @@ else {
 	$process_m3u8 = False;
 }
 
+// 2021-08-17: "App Access Token" changes
+include("config.php");
+
+if (!isset($client_id)) {
+	die("Client-ID isn't set.");
+}
+
+if (!isset($client_secret)) {
+	die("Client Secret isn't set.");
+}
+
+if (!isset($access_token)) {
+	die("Access token isn't set.");
+}
+
 // Get ID for specified login
 
-$ch_json=@fopen("https://api.twitch.tv/kraken/users?login=$ch_name", "r", false, stream_context_create(array(
+$ch_json=@fopen("https://api.twitch.tv/helix/users?login=$ch_name", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: $client_id\r\nAuthorization: Bearer $access_token\r\nConnection: close"),
+	"ssl"=>array(
+		"security_level"=>1)
+)));
 if ($ch_json===false) {
 	$ch="0";
 }
 else {
 	$ch_inf=json_decode(stream_get_contents($ch_json), true);
-	$ch=$ch_inf["users"][0]["_id"];
+	$ch=$ch_inf["data"][0]["id"];
 }
 
 // Check if this channel is hosting someone
@@ -60,7 +78,10 @@ else {
 $check_host=@fopen("https://tmi.twitch.tv/hosts?include_logins=1&host=$ch", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: $client_id\r\nAuthorization: Bearer $access_token\r\nConnection: close"),
+	"ssl"=>array(
+		"security_level"=>1)
+)));
 
 if ($check_host===false) {
 	$host_info=False;
@@ -77,10 +98,13 @@ if ($host_info!==False && @$host_info["hosts"][0]["target_id"]) {
 	$ch=$host_info["hosts"][0]["target_id"];
 }
 
-$stmjson = @fopen("https://api.twitch.tv/kraken/channels/$ch", "r", false, stream_context_create(array(
+$stmjson = @fopen("https://api.twitch.tv/helix/channels?broadcaster_id=$ch", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: $client_id\r\nAuthorization: Bearer $access_token\r\nConnection: close"),
+	"ssl"=>array(
+		"security_level"=>1)
+)));
 
 if ($stmjson===false) {
 	$stminf=json_decode("{\"status\":null,\"display_name\":\"$ch_name\",\"game\":null}",True);
@@ -92,7 +116,10 @@ else {
 $token = @fopen("https://api.twitch.tv/api/channels/$ch_name/access_token", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close\r\nHost: api.twitch.tv"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: $client_id\r\nAuthorization: Bearer $access_token\r\nConnection: close\r\nHost: api.twitch.tv"),
+	"ssl"=>array(
+		"security_level"=>1)
+)));
 
 if ($token===false) {
 	header("HTTP/1.1 404 Not Found");
@@ -108,7 +135,10 @@ $p=rand(0,100000000);
 $m3u = @fopen("https://usher.ttvnw.net/api/channel/hls/$ch_name.m3u8?player=twitchweb&token=".urlencode($stream_token["token"])."&sig=".$stream_token["sig"]."&allow_audio_only=true&allow_source=true&type=any&p=$p&allow_spect=true", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb,\r\nConnection: close\r\nHost: usher.ttvnw.net"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: $client_id,\r\nConnection: close\r\nHost: usher.ttvnw.net"),
+	"ssl"=>array(
+		"security_level"=>1)
+)));
 if ($m3u===false) {
 	header("HTTP/1.1 404 Not Found");
 	header("Content-Type: text/plain");
@@ -116,7 +146,8 @@ if ($m3u===false) {
 	exit;
 }
 else {
-	header("Content-Type: audio/x-mpegurl");
+	//header("Content-Type: audio/x-mpegurl");
+	header("Content-Type: text/plain");
 }
 
 $m3u_array=explode("\n", stream_get_contents($m3u));
@@ -143,7 +174,10 @@ if ($process_m3u8 != True) {
 $ao_m3u = @fopen("$ao_url", "r", false, stream_context_create(array(
 	"http"=>array(
 		"method"=>"GET",
-		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: 1akvowyyvu4s4avdx9ftilze7zt7jtb\r\nAccept: application/vnd.twitchtv.v5+json\r\nConnection: close"))));
+		"header" =>"User-Agent: Mozilla/5.0 (Linux; Android 5.1.1; Z717VL Build/LMY47V; U; en-us) TTVStreamHandler/1.5 (PHP/5.4; Apache/2.4)\r\nClient-ID: $client_id\r\nAuthorization: Bearer $access_token\r\nConnection: close"),
+	"ssl"=>array(
+		"security_level"=>1)
+)));
 
 $ao_m3tx=stream_get_contents($ao_m3u);
 
